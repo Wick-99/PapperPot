@@ -64,6 +64,11 @@ export function Hero() {
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
+    const isTouch =
+      window.matchMedia("(hover: none)").matches ||
+      !window.matchMedia("(pointer: fine)").matches;
+    if (isTouch) return;
+
     const onMove = (e: PointerEvent) => {
       const r = hero.getBoundingClientRect();
       const tx = (e.clientX - r.left) / r.width;
@@ -84,6 +89,11 @@ export function Hero() {
 
   useEffect(() => {
     if (reduce) return;
+    const isTouch =
+      window.matchMedia("(hover: none)").matches ||
+      !window.matchMedia("(pointer: fine)").matches;
+    if (isTouch || !visible) return;
+
     let raf = 0;
     const loop = () => {
       const center = centerRef.current;
@@ -96,7 +106,7 @@ export function Hero() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduce]);
+  }, [reduce, visible]);
 
   return (
     <section className="hero" id="hero" data-screen-label="Hero" ref={heroRef}>

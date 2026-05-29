@@ -20,9 +20,11 @@ export function Loader({ onReveal }: LoaderProps) {
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 860px), (hover: none), (pointer: coarse)").matches;
+    const quickReveal = reduce || mobile;
     let p = 0;
     const tick = window.setInterval(() => {
-      p += Math.random() * 16 + 6;
+      p += quickReveal ? 34 : Math.random() * 16 + 6;
       if (p >= 100) {
         p = 100;
         window.clearInterval(tick);
@@ -41,7 +43,7 @@ export function Loader({ onReveal }: LoaderProps) {
         onReveal?.();
       };
 
-      if (!reduce) {
+      if (!quickReveal) {
         const tl = gsap.timeline({ onComplete: finish });
         tl.to(ref.current, { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, 0.15);
         tl.from(".hero__title .char", { yPercent: 120, opacity: 0, stagger: 0.06, duration: 1, ease: "expo.out" }, 0.5);
@@ -50,9 +52,9 @@ export function Loader({ onReveal }: LoaderProps) {
         tl.from(".hero__cta", { opacity: 0, y: 24, duration: 0.7 }, 1.0);
         tl.from(".nav", { opacity: 0, duration: 0.8 }, 0.9);
       } else if (ref.current) {
-        ref.current.style.transition = "opacity .5s";
+        ref.current.style.transition = "opacity .28s ease";
         ref.current.style.opacity = "0";
-        window.setTimeout(finish, 450);
+        window.setTimeout(finish, 280);
       }
     };
 
@@ -62,7 +64,7 @@ export function Loader({ onReveal }: LoaderProps) {
         window.clearInterval(tick);
         reveal();
       }
-    }, 2500);
+    }, quickReveal ? 900 : 2500);
 
     return () => {
       window.clearInterval(tick);

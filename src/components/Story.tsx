@@ -75,11 +75,42 @@ export function Story() {
     // fails to paint inside pinned sections until the user scrolls past
     // the pin point (the "empty page first" symptom). On mobile the CSS
     // stacks beats vertically and opacity is forced to 1, so we just
-    // skip the GSAP timeline entirely.
+    // skip the pinned timeline and use light vertical reveal triggers.
     const mobile = window.matchMedia("(max-width: 860px)").matches;
-    if (reduce || mobile) return;
+    if (reduce) return;
     const section = sectionRef.current;
     if (!section) return;
+
+    if (mobile) {
+      const ctx = gsap.context(() => {
+        gsap.utils.toArray<HTMLElement>(".beat", section).forEach((beat) => {
+          const copy = beat.querySelector<HTMLElement>(".beat__copy");
+          const visual = beat.querySelector<HTMLElement>(".beat__visual");
+          const meter = beat.querySelector<HTMLElement>(".beat__meter i");
+
+          gsap.set(copy, { opacity: 0, y: 34 });
+          gsap.set(visual, { opacity: 0, y: 26, scale: 0.96 });
+          gsap.set(meter, { scaleX: 0 });
+
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: beat,
+              start: "top 82%",
+              once: true,
+            },
+          });
+
+          tl.to(copy, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" })
+            .to(visual, { opacity: 1, y: 0, scale: 1, duration: 0.75, ease: "power3.out" }, 0.1)
+            .to(meter, { scaleX: 1, duration: 0.7, ease: "power2.out" }, 0.18);
+        });
+      }, section);
+
+      return () => {
+        ctx.revert();
+        ScrollTrigger.refresh();
+      };
+    }
 
     const ctx = gsap.context(() => {
       const beats = gsap.utils.toArray<HTMLElement>(".beat", section);

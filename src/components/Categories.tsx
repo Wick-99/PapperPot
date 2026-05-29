@@ -94,14 +94,51 @@ export function Categories() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
     const horizontal =
       window.matchMedia("(min-width:861px)").matches &&
-      !window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-    if (!horizontal) return;
+      !reduce;
 
     const section = sectionRef.current;
     const track = trackRef.current;
     if (!section || !track) return;
+
+    if (!horizontal) {
+      if (reduce) return;
+      const ctx = gsap.context(() => {
+        gsap.utils.toArray<HTMLElement>(".cat", section).forEach((cat) => {
+          const chars = cat.querySelectorAll<HTMLElement>(".cat__char-inner");
+          const visual = cat.querySelector<HTMLElement>(".cat__visual");
+          gsap.set(chars, { yPercent: 105, opacity: 0, rotateX: -55 });
+          gsap.set(cat, { "--reveal": "100%" });
+          if (visual) gsap.set(visual, { opacity: 0, y: 28, rotate: -4 });
+
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: cat,
+              start: "top 82%",
+              once: true,
+            },
+          });
+
+          tl.to(chars, {
+            yPercent: 0,
+            opacity: 1,
+            rotateX: 0,
+            duration: 0.8,
+            ease: "expo.out",
+            stagger: 0.026,
+          })
+            .to(cat, { "--reveal": "0%", duration: 0.75, ease: "power3.out" }, 0.12)
+            .to(visual, { opacity: 1, y: 0, rotate: 0, duration: 0.8, ease: "power3.out" }, 0.08);
+        });
+      }, section);
+
+      return () => {
+        ctx.revert();
+        ScrollTrigger.refresh();
+      };
+    }
 
     const amount = () => Math.max(0, track.scrollWidth - window.innerWidth);
 

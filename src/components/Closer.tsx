@@ -52,8 +52,17 @@ export function Closer() {
     const unsub = subscribeScrollVelocity((v) => {
       velRef.current = v;
     });
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 860px), (hover: none), (pointer: coarse)").matches;
+    if (reduce || mobile) {
+      return unsub;
+    }
+
     let raf = 0;
+    let active = false;
     const loop = () => {
+      if (!active) return;
       raf = requestAnimationFrame(loop);
       const roll = rollRef.current;
       if (!roll) return;
@@ -62,9 +71,34 @@ export function Closer() {
       if (h && rollYRef.current <= -h) rollYRef.current += h;
       roll.style.transform = `translateY(${rollYRef.current}px)`;
     };
-    raf = requestAnimationFrame(loop);
+    const start = () => {
+      if (active) return;
+      active = true;
+      raf = requestAnimationFrame(loop);
+    };
+    const stop = () => {
+      active = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const roll = rollRef.current;
+    const io = roll
+      ? new IntersectionObserver(
+          ([entry]) => {
+            if (entry?.isIntersecting) start();
+            else stop();
+          },
+          { rootMargin: "240px" },
+        )
+      : null;
+
+    if (roll && io) io.observe(roll);
+    else start();
+
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
+      io?.disconnect();
       unsub();
     };
   }, []);

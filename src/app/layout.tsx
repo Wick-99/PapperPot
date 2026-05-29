@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { FontStylesheetActivator } from "@/components/FontStylesheetActivator";
 import "./globals.css";
+
+const fontStylesheetHref =
+  "https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700,800&f[]=satoshi@400,500,700&f[]=space-mono@400,700&display=swap";
 
 export const metadata: Metadata = {
   title: "PAPPERPOT — AI-Native Digital Studio",
@@ -28,13 +32,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="anonymous" />
+        <link rel="preload" href={fontStylesheetHref} as="style" />
         <link
-          href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700,800&f[]=satoshi@400,500,700&f[]=space-mono@400,700&display=swap"
+          href={fontStylesheetHref}
           rel="stylesheet"
+          media="print"
+          data-fontshare-stylesheet
         />
+        <noscript>
+          <link href={fontStylesheetHref} rel="stylesheet" />
+        </noscript>
       </head>
-      <body className="is-loading">{children}</body>
+      <body className="is-loading">
+        <FontStylesheetActivator />
+        {children}
+      </body>
     </html>
   );
 }

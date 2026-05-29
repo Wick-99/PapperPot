@@ -28,18 +28,14 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
     if (reduce) return;
 
-    // Touch devices (iOS Safari especially) have highly-tuned native
-    // momentum scroll. Wrapping it in Lenis's RAF-driven smoothing causes
-    // major jank, occasional "scroll stops responding" symptoms, and
-    // fights iOS's scroll-anchoring. Skip Lenis entirely on touch — we
-    // still wire up smooth anchor scrolling via scrollIntoView, and the
-    // closer's velocity-driven rolling type reads scrollY deltas instead.
+    // Touch devices, especially iOS Safari, already have tuned native
+    // momentum scroll. Lenis adds RAF work and can fight scroll anchoring,
+    // so touch gets native scrolling plus lightweight anchor behavior.
     const isTouch =
       window.matchMedia("(hover: none)").matches ||
       !window.matchMedia("(pointer: fine)").matches;
 
     if (isTouch) {
-      // Anchor smooth-scroll fallback.
       const handleAnchorClick = (e: MouseEvent) => {
         const anchor = (e.target as HTMLElement)?.closest('a[href^="#"]') as HTMLAnchorElement | null;
         if (!anchor) return;
@@ -52,21 +48,33 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       };
       document.addEventListener("click", handleAnchorClick);
 
-      // Feed scroll velocity to the closer's rolling type even without
-      // Lenis — diff scrollY across rAF frames.
       let lastY = window.scrollY;
+      let lastT = performance.now();
       let raf = 0;
-      const tick = () => {
+      let settle = 0;
+
+      const sampleVelocity = () => {
+        raf = 0;
+        const now = performance.now();
         const y = window.scrollY;
-        setScrollVelocity(y - lastY);
+        const dt = Math.max(now - lastT, 16);
+        setScrollVelocity((y - lastY) / (dt / 16.67));
         lastY = y;
-        raf = requestAnimationFrame(tick);
+        lastT = now;
+        window.clearTimeout(settle);
+        settle = window.setTimeout(() => setScrollVelocity(0), 120);
       };
-      raf = requestAnimationFrame(tick);
+
+      const handleScroll = () => {
+        if (!raf) raf = requestAnimationFrame(sampleVelocity);
+      };
+      window.addEventListener("scroll", handleScroll, { passive: true });
 
       return () => {
         document.removeEventListener("click", handleAnchorClick);
-        cancelAnimationFrame(raf);
+        window.removeEventListener("scroll", handleScroll);
+        if (raf) cancelAnimationFrame(raf);
+        window.clearTimeout(settle);
       };
     }
 
