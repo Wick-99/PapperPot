@@ -3302,44 +3302,73 @@ body {
 	/* contain hurts on iOS for sections that need to grow with content. */
 	.show { contain: none; }
 
-	/* content-visibility: auto lets the browser skip rendering (layout,
-	   paint, AND CSS-animation work) for sections that aren't near the
-	   viewport. This is the single biggest "initial load is slow" win on
-	   iOS — without it, every story beat + every showcase window + every
-	   category card is computing animations on first paint, before the
-	   user has even seen them. Supported in Safari 18 / Chrome 125+,
-	   safely ignored on older. The intrinsic size hint avoids layout
-	   shift when the content gets skipped. */
-	.story,
-	.cats,
-	.show,
-	.closer {
-		content-visibility: auto;
-		contain-intrinsic-size: auto 700px;
-	}
+	/* IMPORTANT: do NOT use content-visibility:auto here.
+	   On iOS Safari it reserves placeholder space, skips painting until
+	   the section nears the viewport, then has to paint fresh — but
+	   Safari commits that paint slower than the scroll, so the user sees
+	   blank space appear FIRST then content paint in. Symptom exactly
+	   matches what we hit; the fix is to NOT defer rendering and instead
+	   keep the per-frame paint cost low by freezing animations below. */
 
-	/* Cut a handful of always-running ambient animations on touch. The
-	   pulse rings, shimmer sweeps, scan lines etc. are pleasant on
-	   desktop but on a phone they're just extra paint cost the user can
-	   barely see while scrolling. */
-	.cv-browser__hero::after,
-	.cv-phone__card::after,
+	/* Freeze every animation inside the themed mock-ups on mobile.
+	   On a phone these mockups occupy a tiny strip of each card and
+	   their fine-detail animation (typing carets, shimmers, pulses,
+	   bar growth, sparkline draws, neural-net link blinks) is largely
+	   invisible while scrolling — but it's expensive paint. Killing
+	   it gives us back the perf budget that content-visibility was
+	   meant to claw back, without the blank-on-scroll side-effect. */
+	.cv,
+	.cv *,
+	.sm,
+	.sm *,
+	.sv,
+	.sv *,
+	.cv-helios__row,
+	.cv-pipeline__path,
+	.cv-pipeline__halo,
+	.cv-pipeline__bead,
+	.cv-code__caret,
+	.cv-code__scan,
+	.cv-agent__pulse,
+	.cv-agent__link,
+	.cv-agent__msg,
+	.cv-metrics__bars i,
+	.cv-metrics__spark-line,
+	.cv-train__curve,
+	.cv-train__layer i,
+	.sm-helios__row,
+	.sm-helios__pill--live i,
+	.sm-nori__ring--move,
+	.sm-vantage__sky,
+	.sm-vantage__foot em,
+	.sm-loom__line,
+	.sm-loom__halo,
+	.sm-loom__bead,
+	.sm-atlas__live i,
+	.sm-atlas__spark-line,
+	.sm-atlas__bars i,
+	.sv-idea__orbit,
+	.sv-idea__link,
+	.sv-idea__node-halo,
+	.sv-idea__pulse,
+	.sv-idea__ray,
+	.sv-idea__label,
+	.sv-intel__link,
+	.sv-intel__node-halo,
+	.sv-intel__bead,
+	.sv-vel__streaks i,
+	.sv-vel__path,
+	.sv-vel__pt,
+	.beat__meter i,
 	.show__c-dot,
 	.story__ring,
-	.beat__meter i,
-	.cv-pipeline__path,
-	.sv-vel__path,
-	.cv-agent__pulse,
-	.cv-agent__link {
+	.story__chip,
+	.show__plane,
+	.story__plane,
+	.show__halo,
+	.show__halo--1,
+	.show__halo--2 {
 		animation: none !important;
-	}
-
-	/* Stronger: pause every CSS animation inside elements outside the
-	   viewport. The browser already does some of this but iOS Safari
-	   leaves many running. */
-	.story:not(:has(*:hover)) [class*="cv-"],
-	.cats:not(:has(*:hover)) [class*="cv-"] {
-		animation-play-state: running;
 	}
 }
 
