@@ -38,6 +38,17 @@ export function Hero() {
   const mouseRef = useRef({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 });
   const reduce = useReducedMotion();
   const [visible, setVisible] = useState(true);
+  const [canRenderShader, setCanRenderShader] = useState(false);
+
+  // Three.js shader compile + per-frame FBM noise is too heavy for most
+  // mobile GPUs, especially iOS at high DPR. Skip the canvas on coarse
+  // pointers and let the CSS gradient backdrop (.hero) do the work.
+  useEffect(() => {
+    const isTouch =
+      window.matchMedia("(hover: none)").matches ||
+      !window.matchMedia("(pointer: fine)").matches;
+    setCanRenderShader(!isTouch);
+  }, []);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -89,7 +100,8 @@ export function Hero() {
 
   return (
     <section className="hero" id="hero" data-screen-label="Hero" ref={heroRef}>
-      {visible && <HeroShader mouseRef={mouseRef} />}
+      {visible && canRenderShader && <HeroShader mouseRef={mouseRef} />}
+      {!canRenderShader && <div className="hero__gl-fallback" aria-hidden="true" />}
 
       <div className="hero__reveal" id="heroReveal" aria-hidden="true" ref={revealRef}>
         {REVEAL_WORDS.map((w) => (

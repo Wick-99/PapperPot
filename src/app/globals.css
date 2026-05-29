@@ -380,6 +380,19 @@ body.is-loading {
 	height: 100%;
 	z-index: 0;
 }
+/* Lightweight CSS gradient backdrop used in place of the WebGL shader
+   on touch / mobile devices. Looks similar enough at first glance and
+   costs nothing on the main thread. */
+.hero__gl-fallback {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	background:
+		radial-gradient(60% 50% at 50% 60%, rgba(230, 255, 0, 0.18), transparent 65%),
+		radial-gradient(45% 40% at 30% 30%, rgba(124, 58, 237, 0.35), transparent 65%),
+		radial-gradient(50% 40% at 70% 70%, rgba(255, 0, 127, 0.28), transparent 65%),
+		var(--void);
+}
 .hero__reveal {
 	position: absolute;
 	inset: 0;
@@ -857,13 +870,26 @@ body.is-loading {
 }
 
 @media (max-width: 860px) {
+	/* On mobile we skip the GSAP pin entirely (see Story.tsx) so beats
+	   stack vertically as normal blocks. The pin-spacer that ScrollTrigger
+	   would otherwise leave on iOS Safari is what caused the "empty page
+	   on scroll" symptom. */
+	.story__pin { height: auto; min-height: auto; display: block; padding: clamp(60px, 8vh, 100px) 0; }
+	.story__beats { position: relative; height: auto; display: flex; flex-direction: column; gap: clamp(40px, 8vh, 80px); }
 	.beat {
+		position: relative;
+		inset: auto;
+		opacity: 1;
 		grid-template-columns: 1fr;
 		gap: 24px;
 		max-width: 100%;
+		min-height: 70vh;
 	}
-	.beat__visual { max-height: 38vh; }
-	.beat__bignum { font-size: clamp(200px, 50vw, 320px); opacity: 0.35; }
+	.beat__visual { max-height: 36vh; aspect-ratio: 16 / 11; }
+	.beat__bignum { font-size: clamp(180px, 48vw, 280px); opacity: 0.3; mix-blend-mode: normal; left: 0; right: 0; text-align: center; }
+	.story__progress { display: none; }
+	.story__layer--grid { inset: -10%; }
+	.story__orb { width: 80vmin; height: 80vmin; filter: blur(40px); }
 }
 
 .story__progress {
@@ -3202,4 +3228,68 @@ html {
 /* Hide scrollbar for IE and old Edge */
 body {
 	-ms-overflow-style: none;
+}
+
+/* ═══════════ MOBILE PERFORMANCE OVERRIDES ═══════════
+   Touch-class GPUs choke on stacked filters, mix-blend-mode, and
+   backdrop-filter — all of which force full-viewport recomposites.
+   This block aggressively trims those down on small screens so iOS
+   Safari can keep up with native scroll. */
+@media (max-width: 860px) {
+	/* mix-blend-mode forces an offscreen layer the size of the viewport,
+	   which the iOS compositor then has to recombine on every scroll.
+	   Use plain colours instead. */
+	.nav { mix-blend-mode: normal; background: rgba(5, 5, 5, 0.6); }
+	.cursor { display: none; }
+	.beat__bignum { mix-blend-mode: normal; }
+	.show__halo { mix-blend-mode: normal; }
+
+	/* backdrop-filter is the single most expensive CSS property on iOS
+	   Safari. Strip it everywhere — the rgba background reads fine. */
+	.show__head-cta,
+	.hero__tag,
+	.story__chip,
+	.sv-vel__stats {
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+		background: rgba(11, 11, 12, 0.85);
+	}
+
+	/* Shrink / kill heavy blurs. The remaining colour gives the same
+	   "ambient halo" read without the blur-pass cost. */
+	.show__halo { filter: none; opacity: 0.35; }
+	.show__halo--1, .show__halo--2 { width: 80vw; height: 80vw; }
+	.story__orb { filter: blur(28px); }
+
+	/* Drop a few of the constantly-animating decorative loops that the
+	   user never really sees on a phone but still cost paint. */
+	.show__constellation,
+	.show__grid,
+	.show__plane,
+	.show__bracket,
+	.story__rings,
+	.story__bracket,
+	.cv-code__scan,
+	.sv-vel__streaks,
+	.hero__plane-stage { display: none; }
+
+	/* Category title: no hover available on touch, so reveal the accent
+	   colour by default and don't run the per-char entrance (we already
+	   skip its ScrollTrigger in JS — this is the visual default). */
+	.cat__title::after { clip-path: inset(0 -120% 0 0); }
+	.cat__char-inner { transform: none !important; opacity: 1 !important; }
+
+	/* Drop will-change everywhere — promoting layers eagerly wastes
+	   memory on mobile and offers no real benefit when the elements
+	   aren't actually animating. */
+	.win, .show__halo, .hero__plane, .story__rings { will-change: auto; }
+
+	/* contain hurts on iOS for sections that need to grow with content. */
+	.show { contain: none; }
+}
+
+/* iOS-specific: stop bounce-rubber-banding from being intercepted by
+   scroll-snapping CSS, and let the body scroll natively. */
+@supports (-webkit-touch-callout: none) {
+	body { -webkit-overflow-scrolling: touch; }
 }
