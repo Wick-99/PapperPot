@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { CategoryVisual, type VisualKind } from "./CategoryVisuals";
+import { KIND_TO_SLUG } from "@/data/services";
 
 interface Cat {
   num: string;
@@ -256,13 +258,15 @@ export function Categories() {
         </div>
 
         {CATS.map((c, i) => (
-          <article
+          <Link
             key={c.num}
+            href={`/services/${KIND_TO_SLUG[c.kind]}`}
             className="cat"
             data-cat={i + 1}
             style={{ ["--accent" as string]: c.accent } as React.CSSProperties}
             data-cursor="enter"
             data-label="EXPLORE"
+            aria-label={`${c.title} — view pricing and plans`}
           >
             <span className="cat__num">{c.num}</span>
             <h3 className="cat__title" data-text={c.title}>
@@ -290,10 +294,13 @@ export function Categories() {
                 <li key={t}>{t}</li>
               ))}
             </ul>
+            <span className="cat__cta" aria-hidden="true">
+              View pricing &amp; details <i>→</i>
+            </span>
             <div className={`cat__visual ${c.visualClass}`}>
               <CategoryVisual kind={c.kind} />
             </div>
-          </article>
+          </Link>
         ))}
 
         <div className="cats__end">
