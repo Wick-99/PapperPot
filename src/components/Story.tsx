@@ -70,7 +70,14 @@ export function Story() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return;
+    // ScrollTrigger.pin() creates a position:fixed wrapper with a
+    // pin-spacer reserving its height. iOS Safari's compositor regularly
+    // fails to paint inside pinned sections until the user scrolls past
+    // the pin point (the "empty page first" symptom). On mobile the CSS
+    // stacks beats vertically and opacity is forced to 1, so we just
+    // skip the GSAP timeline entirely.
+    const mobile = window.matchMedia("(max-width: 860px)").matches;
+    if (reduce || mobile) return;
     const section = sectionRef.current;
     if (!section) return;
 
