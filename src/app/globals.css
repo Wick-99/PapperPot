@@ -2322,6 +2322,10 @@ body.is-loading {
 		0 30px 80px -20px rgba(0, 0, 0, 0.9),
 		0 0 0 1px rgba(124, 58, 237, 0.0) inset;
 	transition: box-shadow 0.4s var(--ease), border-color 0.4s;
+	/* On desktop we hijack pointer events for drag; on touch the drag
+	   handler isn't even bound (see Showcase.tsx — gated behind !stack)
+	   so `none` would block native vertical scroll. The mobile override
+	   below re-enables pan-y. */
 	touch-action: none;
 	overflow: hidden;
 	/* Each window paints in its own compositor layer, so animating inside
@@ -2475,6 +2479,17 @@ body.is-loading {
 		top: auto !important;
 		transform: none !important;
 		width: 100%;
+		/* CRITICAL: drop touch-action:none here. Without this, a finger
+		   landing on a window during scroll is treated as a drag-start
+		   and the browser cancels the scroll gesture — symptom is "scroll
+		   gets stuck at the Showcase section" on Android. We never bind
+		   drag handlers on touch (Showcase.tsx gates them behind !stack)
+		   so native pan must be allowed. */
+		touch-action: auto;
+		/* Drop the per-window paint layer on mobile — promotes too many
+		   layers and bloats GPU memory. */
+		contain: none;
+		will-change: auto;
 	}
 	.show__plane, .show__edge, .show__bracket, .show__constellation { display: none; }
 }
@@ -3286,6 +3301,46 @@ body {
 
 	/* contain hurts on iOS for sections that need to grow with content. */
 	.show { contain: none; }
+
+	/* content-visibility: auto lets the browser skip rendering (layout,
+	   paint, AND CSS-animation work) for sections that aren't near the
+	   viewport. This is the single biggest "initial load is slow" win on
+	   iOS — without it, every story beat + every showcase window + every
+	   category card is computing animations on first paint, before the
+	   user has even seen them. Supported in Safari 18 / Chrome 125+,
+	   safely ignored on older. The intrinsic size hint avoids layout
+	   shift when the content gets skipped. */
+	.story,
+	.cats,
+	.show,
+	.closer {
+		content-visibility: auto;
+		contain-intrinsic-size: auto 700px;
+	}
+
+	/* Cut a handful of always-running ambient animations on touch. The
+	   pulse rings, shimmer sweeps, scan lines etc. are pleasant on
+	   desktop but on a phone they're just extra paint cost the user can
+	   barely see while scrolling. */
+	.cv-browser__hero::after,
+	.cv-phone__card::after,
+	.show__c-dot,
+	.story__ring,
+	.beat__meter i,
+	.cv-pipeline__path,
+	.sv-vel__path,
+	.cv-agent__pulse,
+	.cv-agent__link {
+		animation: none !important;
+	}
+
+	/* Stronger: pause every CSS animation inside elements outside the
+	   viewport. The browser already does some of this but iOS Safari
+	   leaves many running. */
+	.story:not(:has(*:hover)) [class*="cv-"],
+	.cats:not(:has(*:hover)) [class*="cv-"] {
+		animation-play-state: running;
+	}
 }
 
 /* iOS-specific: stop bounce-rubber-banding from being intercepted by
