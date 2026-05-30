@@ -22,12 +22,12 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
 	const { slug } = await params;
 	const service = SERVICES[slug];
-	if (!service) return { title: "Service not found — Papperpot" };
+	if (!service) return { title: "Service not found — Paperpot" };
 	return {
-		title: `${service.title} — Papperpot`,
+		title: `${service.title} — Paperpot`,
 		description: service.promise,
 		openGraph: {
-			title: `${service.title} — Papperpot`,
+			title: `${service.title} — Paperpot`,
 			description: service.promise,
 		},
 	};

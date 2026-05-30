@@ -24,7 +24,7 @@ const BEATS: Beat[] = [
         becomes a <em>system.</em>
       </>
     ),
-    body: "Every Papperpot engagement starts as a raw idea and ends as a living, shippable product. No decks that die in drawers.",
+    body: "Every Paperpot engagement starts as a raw idea and ends as a living, shippable product. No decks that die in drawers.",
     kind: "idea",
   },
   {

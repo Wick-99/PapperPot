@@ -1,4 +1,4 @@
-# PAPPERPOT
+# PAPERPOT
 
 An immersive, AI-native digital-studio website built as a single Next.js page.
 Void-black aesthetic, acid-yellow and cyber-pink accents, paper-craft motion,

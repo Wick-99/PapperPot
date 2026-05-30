@@ -247,7 +247,7 @@ export function Closer() {
             onClick={() => setPromoOpen((v) => !v)}
             suppressHydrationWarning
           >
-            <span className="promo__chev">+</span> Got a Papperpot promo?
+            <span className="promo__chev">+</span> Got a Paperpot promo?
           </button>
 
           <div className="promo" id="promoPanel" ref={panelRef}>
@@ -315,8 +315,8 @@ export function Closer() {
         </form>
 
         <div className="closer__meta">
-          <a href="mailto:hello@papperpot.studio" data-cursor>
-            hello@papperpot.studio
+          <a href="mailto:hello@paperpot.studio" data-cursor>
+            hello@paperpot.studio
           </a>
           <div className="closer__social">
             <a href="#" data-cursor>Instagram</a>

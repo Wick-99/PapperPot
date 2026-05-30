@@ -86,7 +86,7 @@ export function Loader({ onReveal }: LoaderProps) {
           <i>%</i>
         </div>
         <div className="loader__meta">
-          <span>PAPPERPOT</span>
+          <span>PAPERPOT</span>
           <span>EST. 2025 — AI-NATIVE STUDIO</span>
         </div>
       </div>

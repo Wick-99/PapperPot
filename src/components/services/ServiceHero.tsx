@@ -63,7 +63,7 @@ export function ServiceHero({ service }: { service: Service }) {
       <span className="srv-hero__bracket srv-hero__bracket--bl" aria-hidden="true" />
       <span className="srv-hero__bracket srv-hero__bracket--br" aria-hidden="true" />
       <span className="srv-hero__edge srv-hero__edge--left" aria-hidden="true">
-        PAPPERPOT · SERVICES — {service.num}
+        PAPERPOT · SERVICES — {service.num}
       </span>
       <span className="srv-hero__edge srv-hero__edge--right" aria-hidden="true">
         {service.category}

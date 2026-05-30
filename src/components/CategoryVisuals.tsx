@@ -41,7 +41,7 @@ function WindowChrome({ url }: { url: string }) {
 function BrowserVisual() {
   return (
     <div className="cv cv-browser">
-      <WindowChrome url="papperpot.studio" />
+      <WindowChrome url="paperpot.studio" />
       <div className="cv-browser__body">
         <div className="cv-browser__hero" />
         <div className="cv-browser__row" />
@@ -134,7 +134,7 @@ function CodeVisual() {
       <WindowChrome url="flow.py" />
       <pre className="cv-code__body">
         <code>
-          <span className="cv-code__ln"><i>01</i><em>from</em> papperpot <em>import</em> <strong>agent</strong></span>
+          <span className="cv-code__ln"><i>01</i><em>from</em> paperpot <em>import</em> <strong>agent</strong></span>
           <span className="cv-code__ln"><i>02</i></span>
           <span className="cv-code__ln"><i>03</i><em>def</em> <strong>triage</strong>(ticket):</span>
           <span className="cv-code__ln"><i>04</i>{"  "}ctx = <strong>retrieve</strong>(ticket)</span>

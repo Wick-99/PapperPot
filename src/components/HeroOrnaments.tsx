@@ -5,7 +5,7 @@ import { memo } from "react";
 /**
  * Decorative ornaments for the hero portal.
  *
- * - A paper plane traversing a curved dotted path (themed to "Papperpot")
+ * - A paper plane traversing a curved dotted path (themed to "Paperpot")
  *   using SVG animateMotion — GPU-cheap path-following
  * - Corner registration brackets, viewfinder-style
  * - Vertical edge labels on left + right gutters
@@ -29,7 +29,7 @@ function HeroOrnamentsImpl() {
 
       {/* Vertical-axis edge labels. */}
       <span className="hero__edge hero__edge--left" aria-hidden="true">
-        PAPPERPOT.STUDIO — EST. 2025
+        PAPERPOT.STUDIO — EST. 2025
       </span>
       <span className="hero__edge hero__edge--right" aria-hidden="true">
         SCENE 01 — HERO PORTAL

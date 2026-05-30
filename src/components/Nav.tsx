@@ -37,7 +37,7 @@ export function Nav() {
   return (
     <header className="nav" id="nav" ref={ref}>
       <a href="#hero" className="nav__logo" data-cursor="enter" data-label="TOP">
-        <span className="nav__logo-mark">◢</span> PAPPERPOT
+        <span className="nav__logo-mark">◢</span> PAPERPOT
       </a>
       <nav className="nav__links">
         <a href="#story" data-cursor>Studio</a>
